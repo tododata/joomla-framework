@@ -7,38 +7,29 @@
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace Joomla\Session\Storage;
-
-
-use Joomla\Session\Storage;
-use RuntimeException;
+namespace Joomla\Session\Handler;
 
 /**
  * APC session storage handler for PHP
  *
  * @package     Joomla.Platform
  * @subpackage  Session
- * @see         http://www.php.net/manual/en/function.session-set-save-handler.php
- * @since       11.1
+ * @since       1.0
  */
-class Apc extends Storage
+class ApcSessionHandler implements \SessionHandlerInterface
 {
 	/**
 	 * Constructor
 	 *
-	 * @param   array  $options  Optional parameters
-	 *
-	 * @since   11.1
+	 * @since   1.0
 	 * @throws  RuntimeException
 	 */
-	public function __construct($options = array())
+	public function __construct()
 	{
 		if (!self::isSupported())
 		{
-			throw new RuntimeException('APC Extension is not available', 404);
+			throw new \RuntimeException('APC Extension is not available');
 		}
-
-		parent::__construct($options);
 	}
 
 	/**
@@ -49,7 +40,7 @@ class Apc extends Storage
 	 *
 	 * @return  string  The session data.
 	 *
-	 * @since   11.1
+	 * @since   1.0
 	 */
 	public function read($id)
 	{
@@ -66,7 +57,7 @@ class Apc extends Storage
 	 *
 	 * @return  boolean  True on success, false otherwise.
 	 *
-	 * @since   11.1
+	 * @since   1.0
 	 */
 	public function write($id, $session_data)
 	{
@@ -82,7 +73,7 @@ class Apc extends Storage
 	 *
 	 * @return  boolean  True on success, false otherwise.
 	 *
-	 * @since   11.1
+	 * @since   1.0
 	 */
 	public function destroy($id)
 	{
@@ -94,12 +85,50 @@ class Apc extends Storage
 	/**
 	 * Test to see if the SessionHandler is available.
 	 *
-	 * @return boolean  True on success, false otherwise.
+	 * @return  boolean  True on success, false otherwise.
 	 *
-	 * @since   12.1
+	 * @since   1.0
 	 */
 	public static function isSupported()
 	{
 		return extension_loaded('apc');
+	}
+
+	/**
+	 * Cleans up expired sessions.
+	 * Called by session_start(), based on session.gc_divisor, session.gc_probability and session.gc_lifetime settings.
+	 *
+	 * @param   string  $maxlifetime  Sessions that have not updated for the last maxlifetime seconds will be removed.
+	 *
+	 * @return  bool
+	 */
+	public function gc($maxlifetime)
+	{
+		return true;
+	}
+
+	/**
+	 * Re-initialize existing session, or creates a new one.
+	 * Called when a session starts or when session_start() is invoked.
+	 *
+	 * @param   string  $save_path  The path where to store/retrieve the session.
+	 * @param   string  $name       The session name.
+	 *
+	 * @return  bool
+	 */
+	public function open($save_path, $name)
+	{
+		return true;
+	}
+
+	/*
+	 * Closes the current session.
+	 * This function is automatically executed when closing the session, or explicitly via session_write_close().
+	 *
+	 * @return  bool
+	 */
+	public function close()
+	{
+		return true;
 	}
 }

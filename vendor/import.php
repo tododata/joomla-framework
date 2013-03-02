@@ -46,4 +46,5 @@ JLoader::setup();
 if (version_compare(PHP_VERSION, '5.4.0', '<'))
 {
 	JLoader::register('JsonSerializable', JPATH_PLATFORM . '/Joomla/Compat/JsonSerializable.php');
+	JLoader::register('SessionHandlerInterface', JPATH_PLATFORM . '/Joomla/Session/SessionHandlerInterface.php');
 }

@@ -8,10 +8,15 @@
     "require": {
         "php": ">=5.3.10"
     },
+    "suggest": {
+    	"ext-apc": "APC to use the APC storage adapter",
+    	"ext-xcache": "Xcache to use the Xcache storage adapter"
+    },
     "target-dir": "Joomla/Session",
     "autoload": {
     	"psr-0": {
     		"Joomla\\Session": ""
-    	}
+    	},
+		"classmap": ["SessionHandlerInterface.php"]
     }
 }
