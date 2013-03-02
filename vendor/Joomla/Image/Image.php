@@ -9,8 +9,8 @@
 
 namespace Joomla\Image;
 
+use Psr\Log\LoggerInterface;
 
-use Joomla\Log\Log;
 use InvalidArgumentException;
 use RuntimeException;
 use LogicException;
@@ -68,6 +68,12 @@ class Image
 	protected static $formats = array();
 
 	/**
+	 * @var    LoggerInterface
+	 * @since  1.0
+	 */
+	protected $logger = null;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param   mixed  $source  Either a file path for a source image or a GD resource handler for an image.
@@ -81,9 +87,7 @@ class Image
 		if (!extension_loaded('gd'))
 		{
 			// @codeCoverageIgnoreStart
-			Log::add('The GD extension for PHP is not available.', Log::ERROR);
 			throw new RuntimeException('The GD extension for PHP is not available.');
-
 			// @codeCoverageIgnoreEnd
 		}
 
@@ -106,6 +110,18 @@ class Image
 			// If the source input is not empty, assume it is a path and populate the image handle.
 			$this->loadFile($source);
 		}
+	}
+
+	/**
+     * Sets a logger instance on the object
+     *
+     * @param    LoggerInterface  $logger
+	 *
+     * @return   void
+     */
+	public function setLogger(LoggerInterface $logger)
+	{
+		$this->logger = $logger;
 	}
 
 	/**
@@ -530,7 +546,10 @@ class Image
 				if (empty(self::$formats[IMAGETYPE_GIF]))
 				{
 					// @codeCoverageIgnoreStart
-					Log::add('Attempting to load an image of unsupported type GIF.', Log::ERROR);
+					if ($this->logger !== null)
+					{
+						$this->logger->error('Attempting to load an image of unsupported type GIF.');
+					}
 					throw new RuntimeException('Attempting to load an image of unsupported type GIF.');
 
 					// @codeCoverageIgnoreEnd
@@ -555,7 +574,10 @@ class Image
 				if (empty(self::$formats[IMAGETYPE_JPEG]))
 				{
 					// @codeCoverageIgnoreStart
-					Log::add('Attempting to load an image of unsupported type JPG.', Log::ERROR);
+					if ($this->logger !== null)
+					{
+						$this->logger->error('Attempting to load an image of unsupported type JPG.');
+					}
 					throw new RuntimeException('Attempting to load an image of unsupported type JPG.');
 
 					// @codeCoverageIgnoreEnd
@@ -580,7 +602,10 @@ class Image
 				if (empty(self::$formats[IMAGETYPE_PNG]))
 				{
 					// @codeCoverageIgnoreStart
-					Log::add('Attempting to load an image of unsupported type PNG.', Log::ERROR);
+					if ($this->logger !== null)
+					{
+						$this->logger->error('Attempting to load an image of unsupported type PNG.');
+					}
 					throw new RuntimeException('Attempting to load an image of unsupported type PNG.');
 
 					// @codeCoverageIgnoreEnd
@@ -601,8 +626,11 @@ class Image
 				break;
 
 			default:
-				Log::add('Attempting to load an image of unsupported type: ' . $properties->mime, Log::ERROR);
-				throw new InvalidArgumentException('Attempting to load an image of unsupported type: ' . $properties->mime);
+				if ($this->logger !== null)
+				{
+					$this->logger->error('Attempting to load an image of unsupported type ' . $properties->mime);
+				}
+				throw new InvalidArgumentException('Attempting to load an image of unsupported type ' . $properties->mime);
 				break;
 		}
 
@@ -803,7 +831,10 @@ class Image
 
 		if (!class_exists($className))
 		{
-			Log::add('The ' . ucfirst($type) . ' image filter is not available.', Log::ERROR);
+			if ($this->logger !== null)
+			{
+				$this->logger->error('The ' . ucfirst($type) . ' image filter is not available.');
+			}
 			throw new RuntimeException('The ' . ucfirst($type) . ' image filter is not available.');
 		}
 
@@ -814,7 +845,10 @@ class Image
 		if (!($instance instanceof Filter))
 		{
 			// @codeCoverageIgnoreStart
-			Log::add('The ' . ucfirst($type) . ' image filter is not valid.', Log::ERROR);
+			if ($this->logger !== null)
+			{
+				$this->logger->error('The ' . ucfirst($type) . ' image filter is not valid.');
+			}
 			throw new RuntimeException('The ' . ucfirst($type) . ' image filter is not valid.');
 
 			// @codeCoverageIgnoreEnd

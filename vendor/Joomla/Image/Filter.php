@@ -9,25 +9,28 @@
 
 namespace Joomla\Image;
 
-
-use Joomla\Log\Log;
-use InvalidArgumentException;
-use RuntimeException;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class to manipulate an image.
  *
  * @package     Joomla.Platform
  * @subpackage  Image
- * @since       11.3
+ * @since       1.0
  */
 abstract class Filter
 {
 	/**
 	 * @var    resource  The image resource handle.
-	 * @since  11.3
+	 * @since  1.0
 	 */
 	protected $handle;
+
+	/**
+	 * @var    LoggerInterface
+	 * @since  1.0
+	 */
+	protected $logger = null;
 
 	/**
 	 * Class constructor.
@@ -44,8 +47,11 @@ abstract class Filter
 		if (!function_exists('imagefilter'))
 		{
 			// @codeCoverageIgnoreStart
-			Log::add('The imagefilter function for PHP is not available.', Log::ERROR);
-			throw new RuntimeException('The imagefilter function for PHP is not available.');
+			if ($this->logger !== null)
+			{
+				$this->logger->error('The imagefilter function for PHP is not available.');
+			}
+			throw new \RuntimeException('The imagefilter function for PHP is not available.');
 
 			// @codeCoverageIgnoreEnd
 		}
@@ -53,11 +59,26 @@ abstract class Filter
 		// Make sure the file handle is valid.
 		if (!is_resource($handle) || (get_resource_type($handle) != 'gd'))
 		{
-			Log::add('The image handle is invalid for the image filter.', Log::ERROR);
-			throw new InvalidArgumentException('The image handle is invalid for the image filter.');
+			if ($this->logger !== null)
+			{
+				$this->logger->error('The image handle is invalid for the image filter.');
+			}
+			throw new \InvalidArgumentException('The image handle is invalid for the image filter.');
 		}
 
 		$this->handle = $handle;
+	}
+
+	/**
+     * Sets a logger instance on the object
+     *
+     * @param    LoggerInterface  $logger
+	 *
+     * @return   void
+     */
+	public function setLogger(LoggerInterface $logger = null)
+	{
+		$this->logger = $logger;
 	}
 
 	/**
@@ -67,7 +88,7 @@ abstract class Filter
 	 *
 	 * @return  void
 	 *
-	 * @since   11.3
+	 * @since   1.0
 	 */
 	abstract public function execute(array $options = array());
 }
